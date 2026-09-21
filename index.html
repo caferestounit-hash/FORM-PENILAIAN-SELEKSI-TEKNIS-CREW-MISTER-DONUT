@@ -1164,18 +1164,26 @@
             const yearSelect = document.getElementById('mo-year-filter-rekap'); const batchSelect = document.getElementById('mo-batch-filter-rekap');
             const yearFilter = yearSelect.options[yearSelect.selectedIndex]?.text || '-'; const batchFilter = batchSelect.options[batchSelect.selectedIndex]?.text || '-';
             
-            // Bersihkan kelas yang mengunci lebar kolom agar bisa muat 1 baris di PDF
-            let tableHead = document.querySelector('#view-rekapan thead').innerHTML.replace(/min-w-\[\d+px\]/g, '').replace(/whitespace-nowrap/g, 'whitespace-normal');
-            let tableBody = document.getElementById('mo-rekapan-tbody').innerHTML.replace(/min-w-\[\d+px\]/g, '').replace(/whitespace-nowrap/g, 'whitespace-normal');
+            // Bersihkan kelas yang mengunci lebar kolom dan ukuran font Tailwind agar 100% seragam
+            const cleanHtml = (htmlStr) => {
+                return htmlStr
+                    .replace(/min-w-\[\d+px\]/g, '')
+                    .replace(/whitespace-nowrap/g, 'whitespace-normal')
+                    .replace(/text-(xs|sm|base|lg|xl|2xl)/g, '')
+                    .replace(/text-\[\d+px\]/g, '');
+            };
+
+            let tableHead = cleanHtml(document.querySelector('#view-rekapan thead').innerHTML);
+            let tableBody = cleanHtml(document.getElementById('mo-rekapan-tbody').innerHTML);
             
             let html = `<div style="background: white; color: black; font-family: sans-serif; width: 100%;">
                 <style>
                     @page { size: landscape; margin: 4mm; } 
                     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-                    /* Paksa semua teks di tabel menjadi ukuran seragam 6px */
-                    table * { font-size: 6px !important; line-height: 1.3 !important; }
+                    /* Paksa semua teks di tabel menjadi ukuran seragam */
                     table { width: 100%; border-collapse: collapse; table-layout: auto; } 
-                    th, td { border: 1px solid #ccc; padding: 3px !important; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; min-width: 0 !important; width: auto !important; white-space: normal !important; } 
+                    th, td { border: 1px solid #ccc; padding: 4px !important; vertical-align: middle; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; min-width: 0 !important; width: auto !important; white-space: normal !important; font-size: 7px !important; line-height: 1.4 !important; } 
+                    th *, td * { font-size: 7px !important; line-height: 1.4 !important; }
                     th { background-color: #362219 !important; color: white !important; text-align: center; font-weight: bold; } 
                     .text-center { text-align: center; } 
                     button, select { display: none !important; } 
@@ -1187,9 +1195,9 @@
                     .text-red-700 { color: #b91c1c !important; } 
                     div, span, p { white-space: normal !important; }
                 </style>
-                <div style="text-align: center; margin-bottom: 10px;">
+                <div style="text-align: center; margin-bottom: 12px;">
                     <h2 style="font-size: 14px !important; font-weight: 900; margin: 0; text-transform: uppercase; color: #362219;">Rekapan Penilaian OJT</h2>
-                    <p style="font-size: 8px !important; margin: 3px 0 0 0;">Filter Tahun: ${yearFilter} | Batch: ${batchFilter}</p>
+                    <p style="font-size: 9px !important; margin: 4px 0 0 0;">Filter Tahun: ${yearFilter} | Batch: ${batchFilter}</p>
                 </div>
                 <table><thead>${tableHead}</thead><tbody>${tableBody}</tbody></table>
             </div>`;
