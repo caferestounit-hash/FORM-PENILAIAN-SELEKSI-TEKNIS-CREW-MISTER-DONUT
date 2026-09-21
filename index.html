@@ -1182,8 +1182,9 @@
                     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
                     /* Paksa semua teks di tabel menjadi ukuran seragam */
                     table { width: 100%; border-collapse: collapse; table-layout: auto; } 
-                    th, td { border: 1px solid #ccc; padding: 4px !important; vertical-align: middle; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; min-width: 0 !important; width: auto !important; white-space: normal !important; font-size: 7px !important; line-height: 1.4 !important; } 
-                    th *, td * { font-size: 7px !important; line-height: 1.4 !important; }
+                    table, table * { font-size: 5.5px !important; line-height: 1.3 !important; }
+                    th, td { border: 1px solid #ccc; padding: 3px !important; vertical-align: middle; overflow-wrap: break-word; word-break: normal !important; min-width: 0 !important; width: auto !important; white-space: normal !important; } 
+                    th:nth-child(1), td:nth-child(1), th:nth-child(3), td:nth-child(3) { white-space: nowrap !important; word-break: keep-all !important; }
                     th { background-color: #362219 !important; color: white !important; text-align: center; font-weight: bold; } 
                     .text-center { text-align: center; } 
                     button, select { display: none !important; } 
@@ -1193,7 +1194,7 @@
                     .bg-red-50, .bg-red-100 { background-color: #fef2f2 !important; } 
                     .text-green-700 { color: #15803d !important; } 
                     .text-red-700 { color: #b91c1c !important; } 
-                    div, span, p { white-space: normal !important; }
+                    div, span, p { white-space: normal !important; word-break: normal !important; }
                     .inline-block { white-space: nowrap !important; word-break: normal !important; }
                 </style>
                 <div style="text-align: center; margin-bottom: 12px;">
