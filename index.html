@@ -1164,13 +1164,14 @@
             const yearSelect = document.getElementById('mo-year-filter-rekap'); const batchSelect = document.getElementById('mo-batch-filter-rekap');
             const yearFilter = yearSelect.options[yearSelect.selectedIndex]?.text || '-'; const batchFilter = batchSelect.options[batchSelect.selectedIndex]?.text || '-';
             
-            // Bersihkan kelas yang mengunci lebar kolom dan ukuran font Tailwind agar 100% seragam
+            // Bersihkan kelas yang mengunci lebar kolom, ukuran font, dan border Tailwind agar 100% seragam
             const cleanHtml = (htmlStr) => {
                 return htmlStr
                     .replace(/min-w-\[\d+px\]/g, '')
                     .replace(/whitespace-nowrap/g, 'whitespace-normal')
                     .replace(/text-(xs|sm|base|lg|xl|2xl)/g, '')
-                    .replace(/text-\[\d+px\]/g, '');
+                    .replace(/text-\[\d+px\]/g, '')
+                    .replace(/border-[a-zA-Z0-9-]+/g, ''); // Hapus class border Tailwind untuk mencegah glitch border tak sejajar
             };
 
             let tableHead = cleanHtml(document.querySelector('#view-rekapan thead').innerHTML);
@@ -1180,11 +1181,19 @@
                 <style>
                     @page { size: landscape; margin: 4mm; } 
                     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-                    /* Paksa semua teks di tabel menjadi ukuran seragam */
-                    table { width: 100%; border-collapse: collapse; table-layout: auto; } 
+                    /* Paksa semua teks di tabel menjadi ukuran seragam dan fix border glitch */
+                    table { width: 100%; border-collapse: collapse; table-layout: auto; border: 1px solid #000; } 
                     table, table * { font-size: 5.5px !important; line-height: 1.3 !important; }
-                    th, td { border: 1px solid #ccc; padding: 3px !important; vertical-align: middle; overflow-wrap: break-word; word-break: normal !important; min-width: 0 !important; width: auto !important; white-space: normal !important; } 
-                    th:nth-child(1), td:nth-child(1), th:nth-child(3), td:nth-child(3) { white-space: nowrap !important; word-break: keep-all !important; }
+                    th, td { border: 1px solid #000 !important; padding: 3px !important; vertical-align: middle; overflow-wrap: break-word; word-break: normal !important; min-width: 0 !important; width: auto !important; white-space: normal !important; } 
+                    
+                    /* Kunci kolom No (1) dan ID Pelamar (3) agar selalu utuh satu baris lurus */
+                    th:nth-child(1), td:nth-child(1), th:nth-child(3), td:nth-child(3) { 
+                        white-space: nowrap !important; 
+                        word-break: keep-all !important; 
+                        min-width: max-content !important; 
+                        width: 1% !important; 
+                    }
+                    
                     th { background-color: #362219 !important; color: white !important; text-align: center; font-weight: bold; } 
                     .text-center { text-align: center; } 
                     button, select { display: none !important; } 
