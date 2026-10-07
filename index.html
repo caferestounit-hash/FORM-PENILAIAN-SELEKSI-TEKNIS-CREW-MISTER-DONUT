@@ -246,7 +246,7 @@
             <table class="w-full text-sm text-left min-w-max border-collapse">
                 <thead class="bg-misdo-800 text-white uppercase text-xs font-black tracking-wider">
                     <tr>
-                        <th class="p-3 border-r border-misdo-700 text-center min-w-[50px]">No</th><th class="p-3 border-r border-misdo-700 min-w-[200px] whitespace-normal">Nama Peserta</th><th class="p-3 border-r border-misdo-700 min-w-[120px]">ID Pelamar</th><th class="p-3 border-r border-misdo-700 min-w-[150px] whitespace-normal">Lokasi OJT</th><th class="p-3 border-r border-misdo-700 min-w-[150px] whitespace-normal">Lokasi Penempatan</th><th class="p-3 border-r border-misdo-700 text-center min-w-[100px]">Tes Teori</th><th class="p-3 border-r border-misdo-700 text-center min-w-[140px] whitespace-normal">Nilai Praktik Beverages</th><th class="p-3 border-r border-misdo-700 text-center min-w-[140px] whitespace-normal">Nilai Praktik Side Dish</th><th class="p-3 border-r border-misdo-700 text-center min-w-[120px] whitespace-normal">Nilai Nonteknis</th><th class="p-3 border-r border-misdo-700 min-w-[200px]">Hal yang dipertahankan</th><th class="p-3 border-r border-misdo-700 min-w-[200px]">Hal yang ditingkatkan</th><th class="p-3 border-r border-misdo-700 min-w-[160px]">Rekomendasi Mentor</th><th class="p-3 border-r border-misdo-700 min-w-[180px]">Keterangan Mentor</th><th class="p-3 border-r border-misdo-700 text-center min-w-[180px]">Keputusan User</th><th class="p-3 text-center min-w-[160px]">Validasi MO</th>
+                        <th class="p-3 border-r border-misdo-700 text-center min-w-[50px]">No</th><th class="p-3 border-r border-misdo-700 min-w-[200px] whitespace-normal">Nama Peserta</th><th class="p-3 border-r border-misdo-700 min-w-[120px]">ID Pelamar</th><th class="p-3 border-r border-misdo-700 min-w-[150px] whitespace-normal">Lokasi OJT</th><th class="p-3 border-r border-misdo-700 min-w-[150px] whitespace-normal">Lokasi Penempatan</th><th class="p-3 border-r border-misdo-700 text-center min-w-[140px] whitespace-normal">Nilai Praktik Beverages</th><th class="p-3 border-r border-misdo-700 text-center min-w-[140px] whitespace-normal">Nilai Praktik Side Dish</th><th class="p-3 border-r border-misdo-700 text-center min-w-[120px] whitespace-normal">Nilai Nonteknis</th><th class="p-3 border-r border-misdo-700 min-w-[200px]">Hal yang dipertahankan</th><th class="p-3 border-r border-misdo-700 min-w-[200px]">Hal yang ditingkatkan</th><th class="p-3 border-r border-misdo-700 min-w-[160px]">Rekomendasi Mentor</th><th class="p-3 border-r border-misdo-700 min-w-[180px]">Keterangan Mentor</th><th class="p-3 border-r border-misdo-700 text-center min-w-[180px]">Keputusan User</th><th class="p-3 text-center min-w-[160px]">Validasi MO</th>
                     </tr>
                 </thead>
                 <tbody id="mo-rekapan-tbody" class="text-gray-700"></tbody>
@@ -733,6 +733,13 @@
             try {
                 for (let i = 0; i < window.globalStore.participantCount; i++) {
                     const master = window.globalStore.selectedParticipants[i]; if(!master) throw new Error(`Peserta ${i+1} belum dipilih.`);
+		    let pScale = window.participants_scale14[i];
+                    if (!pScale) throw new Error(`Data form untuk Peserta ${i+1} tidak valid.`);
+                    if (Object.keys(pScale.scores).length < 15) throw new Error(`Penilaian skala 1-4 (Teknis & Non-Teknis) untuk Peserta ${i+1} belum lengkap diisi.`);
+                    if (!pScale.improvements || !pScale.improvements.trim()) throw new Error(`Hal yang perlu ditingkatkan untuk Peserta ${i+1} wajib diisi.`);
+                    if (!pScale.strengths || !pScale.strengths.trim()) throw new Error(`Hal yang perlu dipertahankan untuk Peserta ${i+1} wajib diisi.`);
+                    if (pScale.status === 'Tidak Diluluskan' && (!pScale.rejectionReason || !pScale.rejectionReason.trim())) throw new Error(`Alasan tidak diluluskan untuk Peserta ${i+1} wajib diisi karena status Tidak Diluluskan.`);
+
                     let avg14 = 0, avgBev = 0, avgSD = 0;
                     if (window.participants_scale14[i] && window.participants_scale14[i].scores) { let tot = 0; for (let k in window.participants_scale14[i].scores) { let v = parseFloat(window.participants_scale14[i].scores[k]); if (!isNaN(v)) tot += v; } avg14 = (tot / 6).toFixed(2); }
                     if (window.scores_beverage[i]) { let tot = 0, cnt = 0; for (let d in window.scores_beverage[i]) { let v = parseFloat(window.scores_beverage[i][d].nilai); if (!isNaN(v)) { tot += v; cnt++; } } avgBev = cnt > 0 ? (tot / cnt).toFixed(2) : 0; }
@@ -775,7 +782,25 @@
             let filteredRecords = window.moParticipantRecords.filter(rec => { return (yearFilter ? rec.formYear === yearFilter : true) && (batchFilter ? rec.form.globalStore.batch === batchFilter : true); });
             const tbody = document.getElementById('mo-rekapan-tbody'); let tHtml = ''; let counter = 1;
             filteredRecords.forEach(rec => {
-                let avg14 = rec.form.participants_scale14[rec.pIndex]?.scores ? (Object.values(rec.form.participants_scale14[rec.pIndex].scores).reduce((a,b)=>a+Number(b),0)/6).toFixed(2) : 0; let bevVals = rec.form.scores_beverage[rec.pIndex] ? Object.values(rec.form.scores_beverage[rec.pIndex]).map(x=>Number(x.nilai)).filter(x=>!isNaN(x)) : []; let avgBev = bevVals.length ? (bevVals.reduce((a,b)=>a+b,0)/bevVals.length).toFixed(2) : 0; let sdVals = rec.form.scores_sidedish[rec.pIndex] ? Object.values(rec.form.scores_sidedish[rec.pIndex]).map(x=>Number(x.nilai)).filter(x=>!isNaN(x)) : []; let avgSD = sdVals.length ? (sdVals.reduce((a,b)=>a+b,0)/sdVals.length).toFixed(2) : 0;
+                let avg14 = rec.form.participants_scale14[rec.pIndex]?.scores ? (Object.values(rec.form.participants_scale14[rec.pIndex].scores).reduce((a,b)=>a+Number(b),0)/6).toFixed(2) : 0; 
+		let bevTot = 0, bevCnt = 0;
+                if (rec.form.scores_beverage && rec.form.scores_beverage[rec.pIndex]) {
+                    Object.values(rec.form.scores_beverage[rec.pIndex]).forEach(x => {
+                        let v = parseFloat(x.nilai);
+                        if (!isNaN(v)) { bevTot += v; bevCnt++; }
+                    });
+                }
+                let avgBev = bevCnt > 0 ? (bevTot / bevCnt).toFixed(2) : "0"; 
+
+                let sdTot = 0, sdCnt = 0;
+                if (rec.form.scores_sidedish && rec.form.scores_sidedish[rec.pIndex]) {
+                    Object.values(rec.form.scores_sidedish[rec.pIndex]).forEach(x => {
+                        let v = parseFloat(x.nilai);
+                        if (!isNaN(v)) { sdTot += v; sdCnt++; }
+                    });
+                }
+                let avgSD = sdCnt > 0 ? (sdTot / sdCnt).toFixed(2) : "0"; 
+		
                 let rowBg = "bg-white hover:bg-gray-50"; if (rec.moApp.status === 'ACCEPT' || rec.moApp.status === 'OK') rowBg = "bg-green-50 hover:bg-green-100"; else if (rec.moApp.status === 'REJECT' || rec.moApp.status === 'NOK') rowBg = "bg-red-50 hover:bg-red-100"; else if (rec.userApp.status === 'OK') rowBg = "bg-green-50 hover:bg-green-100"; else if (rec.userApp.status === 'NOK') rowBg = "bg-red-50 hover:bg-red-100";
 
                 let actionUser = `<div class="flex flex-col gap-1.5 text-center">`;
@@ -806,7 +831,7 @@
                 let mentorStatusHtml = rec.mentorStatus === 'Diluluskan' ? `<span class="text-green-700 font-bold bg-green-100 px-2 py-1 rounded inline-block">Diluluskan</span>` : `<span class="text-red-700 font-bold bg-red-100 px-2 py-1 rounded inline-block">Tidak Diluluskan</span>`;
                 let keteranganMentor = rec.mentorReason || '-'; let str = rec.form.participants_scale14[rec.pIndex].strengths || '-'; let imp = rec.form.participants_scale14[rec.pIndex].improvements || '-';
 
-                tHtml += `<tr class="border-b border-gray-200 transition-colors ${rowBg}"><td class="p-3 text-center font-bold text-gray-800 min-w-[50px]">${counter++}</td><td class="p-3 font-bold text-gray-800 min-w-[200px] whitespace-normal">${rec.participant.namaPeserta}</td><td class="p-3 text-gray-600 min-w-[120px]">${rec.participant.idPelamar}</td><td class="p-3 text-gray-600 min-w-[150px] whitespace-normal">${rec.form.globalStore.flagship}</td><td class="p-3 text-gray-600 min-w-[150px] whitespace-normal">${rec.participant.penempatan || '-'}</td><td class="p-3 text-center font-black text-misdo-800 min-w-[100px]">${rec.participant.tesTeori || '-'}</td><td class="p-3 text-center font-bold text-blue-600 min-w-[140px]">${avgBev}</td><td class="p-3 text-center font-bold text-purple-600 min-w-[140px]">${avgSD}</td><td class="p-3 text-center font-bold text-orange-600 min-w-[120px]">${avg14}</td><td class="p-3 text-sm min-w-[200px] whitespace-normal"><div class="line-clamp-3" title="${str}">${str}</div></td><td class="p-3 text-sm min-w-[200px] whitespace-normal"><div class="line-clamp-3" title="${imp}">${imp}</div></td><td class="p-3 text-xs align-top min-w-[160px]">${mentorStatusHtml}</td><td class="p-3 text-sm align-top min-w-[180px] whitespace-normal"><div class="line-clamp-3">${keteranganMentor}</div></td><td class="p-3 align-middle min-w-[180px]">${actionUser}</td><td class="p-3 align-middle min-w-[160px]">${actionMO}</td></tr>`;
+                tHtml += `<tr class="border-b border-gray-200 transition-colors ${rowBg}"><td class="p-3 text-center font-bold text-gray-800 min-w-[50px]">${counter++}</td><td class="p-3 font-bold text-gray-800 min-w-[200px] whitespace-normal">${rec.participant.namaPeserta}</td><td class="p-3 text-gray-600 min-w-[120px]">${rec.participant.idPelamar}</td><td class="p-3 text-gray-600 min-w-[150px] whitespace-normal">${rec.form.globalStore.flagship}</td><td class="p-3 text-gray-600 min-w-[150px] whitespace-normal">${rec.participant.penempatan || '-'}</td><td class="p-3 text-center font-bold text-blue-600 min-w-[140px]">${avgBev}</td><td class="p-3 text-center font-bold text-purple-600 min-w-[140px]">${avgSD}</td><td class="p-3 text-center font-bold text-orange-600 min-w-[120px]">${avg14}</td><td class="p-3 text-sm min-w-[200px] whitespace-normal"><div class="line-clamp-3" title="${str}">${str}</div></td><td class="p-3 text-sm min-w-[200px] whitespace-normal"><div class="line-clamp-3" title="${imp}">${imp}</div></td><td class="p-3 text-xs align-top min-w-[160px]">${mentorStatusHtml}</td><td class="p-3 text-sm align-top min-w-[180px] whitespace-normal"><div class="line-clamp-3">${keteranganMentor}</div></td><td class="p-3 align-middle min-w-[180px]">${actionUser}</td><td class="p-3 align-middle min-w-[160px]">${actionMO}</td></tr>`;
             });
             if(!tHtml) tHtml = `<tr><td colspan="15" class="p-8 text-center text-gray-500 font-bold bg-gray-50">Tidak ada data untuk filter ini.</td></tr>`;
             tbody.innerHTML = tHtml; if(window.lucide) window.lucide.createIcons();
