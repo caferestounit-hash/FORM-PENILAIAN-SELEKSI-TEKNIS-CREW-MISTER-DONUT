@@ -782,15 +782,17 @@
             let filteredRecords = window.moParticipantRecords.filter(rec => { return (yearFilter ? rec.formYear === yearFilter : true) && (batchFilter ? rec.form.globalStore.batch === batchFilter : true); });
             const tbody = document.getElementById('mo-rekapan-tbody'); let tHtml = ''; let counter = 1;
             filteredRecords.forEach(rec => {
-                let avg14 = rec.form.participants_scale14[rec.pIndex]?.scores ? (Object.values(rec.form.participants_scale14[rec.pIndex].scores).reduce((a,b)=>a+Number(b),0)/6).toFixed(2) : 0; 
-		let bevTot = 0, bevCnt = 0;
+                let calc14 = rec.form.participants_scale14[rec.pIndex]?.scores ? (Object.values(rec.form.participants_scale14[rec.pIndex].scores).reduce((a,b)=>a+Number(b),0)/6) : 0;
+                let avg14 = calc14 > 0 ? calc14.toFixed(2) : "-";
+                
+                let bevTot = 0, bevCnt = 0;
                 if (rec.form.scores_beverage && rec.form.scores_beverage[rec.pIndex]) {
                     Object.values(rec.form.scores_beverage[rec.pIndex]).forEach(x => {
                         let v = parseFloat(x.nilai);
                         if (!isNaN(v)) { bevTot += v; bevCnt++; }
                     });
                 }
-                let avgBev = bevCnt > 0 ? (bevTot / bevCnt).toFixed(2) : "0"; 
+                let avgBev = bevCnt > 0 ? (bevTot / bevCnt).toFixed(2) : "-"; 
 
                 let sdTot = 0, sdCnt = 0;
                 if (rec.form.scores_sidedish && rec.form.scores_sidedish[rec.pIndex]) {
@@ -799,8 +801,8 @@
                         if (!isNaN(v)) { sdTot += v; sdCnt++; }
                     });
                 }
-                let avgSD = sdCnt > 0 ? (sdTot / sdCnt).toFixed(2) : "0"; 
-		
+                let avgSD = sdCnt > 0 ? (sdTot / sdCnt).toFixed(2) : "-";
+
                 let rowBg = "bg-white hover:bg-gray-50"; if (rec.moApp.status === 'ACCEPT' || rec.moApp.status === 'OK') rowBg = "bg-green-50 hover:bg-green-100"; else if (rec.moApp.status === 'REJECT' || rec.moApp.status === 'NOK') rowBg = "bg-red-50 hover:bg-red-100"; else if (rec.userApp.status === 'OK') rowBg = "bg-green-50 hover:bg-green-100"; else if (rec.userApp.status === 'NOK') rowBg = "bg-red-50 hover:bg-red-100";
 
                 let actionUser = `<div class="flex flex-col gap-1.5 text-center">`;
