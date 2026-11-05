@@ -33,6 +33,75 @@
         }
         .bg-pattern { background-image: radial-gradient(#8c6b5d 1px, transparent 1px); background-size: 20px 20px; }
     </style>
+    <style id="ss-style">
+        /* ===== Smart Search (tambahan) ===== */
+        #ss-wrap{position:relative;display:flex;align-items:center}
+        #ss-wrap.ss-off{display:none}
+        #ss-toggle{display:none;width:2.25rem;height:2.25rem;border-radius:9999px;align-items:center;justify-content:center;color:#4d3327;background:#fdf8f5;border:1px solid #eaddd7;cursor:pointer}
+        #ss-toggle:hover{background:#f2e8e5}
+        #ss-field{position:relative;z-index:2;display:flex;align-items:center;gap:.5rem;height:2.25rem;width:9.5rem;padding:0 .7rem;background:#fdf8f5;border:1px solid #eaddd7;border-radius:9999px;color:#4d3327;transition:width .2s ease,box-shadow .2s,border-color .2s,background .2s}
+        #ss-field:focus-within,#ss-wrap.ss-open #ss-field{width:14rem;background:#fff;border-color:#a18072;box-shadow:0 0 0 3px rgba(161,128,114,.22)}
+        @media(min-width:1024px){#ss-field{width:14rem}#ss-field:focus-within,#ss-wrap.ss-open #ss-field{width:22rem}}
+        #ss-input{flex:1;min-width:0;background:transparent;border:0;outline:0;font-size:.8rem;font-weight:600;color:#362219}
+        #ss-input::placeholder{color:#a18072;font-weight:500}
+        #ss-input::-webkit-search-cancel-button{display:none}
+        #ss-kbd{font:700 .65rem/1 ui-monospace,monospace;color:#8c6b5d;border:1px solid #d2bab0;border-radius:.35rem;padding:.2rem .4rem;background:#fff}
+        #ss-wrap.ss-open #ss-kbd,#ss-field:focus-within #ss-kbd,#ss-wrap.ss-has #ss-kbd{display:none}
+        #ss-clear,#ss-close{display:none;border:0;background:#f2e8e5;color:#6a4a3c;border-radius:9999px;width:1.35rem;height:1.35rem;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+        #ss-wrap.ss-has #ss-clear{display:flex}
+        #ss-backdrop{display:none;position:fixed;inset:0;background:rgba(54,34,25,.28);z-index:1}
+        #ss-wrap.ss-open #ss-backdrop{display:block}
+        #ss-panel{display:none;position:fixed;top:4.25rem;left:50%;transform:translateX(-50%);z-index:3;width:min(calc(100vw - 1rem),34rem);max-height:min(calc(100dvh - 5.5rem),36rem);flex-direction:column;background:#fff;border:1px solid #eaddd7;border-radius:1rem;box-shadow:0 25px 50px -12px rgba(54,34,25,.35);overflow:hidden}
+        #ss-wrap.ss-open #ss-panel{display:flex}
+        #ss-chips{display:none;flex-wrap:wrap;gap:.35rem;padding:.6rem .75rem 0}
+        #ss-chips.on{display:flex}
+        .ss-chip{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;background:#362219;color:#fff;border-radius:9999px;padding:.2rem .55rem}
+        #ss-results{overflow-y:auto;padding:.5rem;overscroll-behavior:contain}
+        .ss-group{padding:.5rem .6rem .25rem;font-size:.65rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#a18072;display:flex;justify-content:space-between}
+        .ss-row{display:flex;align-items:center;gap:.7rem;padding:.5rem .6rem;border-radius:.75rem;cursor:pointer}
+        .ss-row:hover,.ss-row.ss-active{background:#f2e8e5}
+        .ss-ico{width:2.1rem;height:2.1rem;border-radius:.6rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+        .ss-ico-participant{background:#f2e8e5;color:#6a4a3c}.ss-ico-form{background:#dcfce7;color:#15803d}.ss-ico-draft{background:#dbeafe;color:#1d4ed8}.ss-ico-trash{background:#fee2e2;color:#b91c1c}.ss-ico-menu{background:#f3e8ff;color:#7e22ce}
+        .ss-body{flex:1;min-width:0}
+        .ss-title{font-size:.85rem;font-weight:800;color:#362219;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .ss-meta,.ss-sub{font-size:.7rem;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .ss-sub{color:#a18072}
+        .ss-badge{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;border-radius:.4rem;padding:.2rem .4rem;white-space:nowrap;flex-shrink:0}
+        .ss-b-green{background:#dcfce7;color:#15803d}.ss-b-red{background:#fee2e2;color:#b91c1c}.ss-b-amber{background:#fef3c7;color:#b45309}.ss-b-blue{background:#dbeafe;color:#1d4ed8}.ss-b-gray{background:#f3f4f6;color:#6b7280}
+        .ss-mark{background:#fde68a;color:inherit;border-radius:2px;padding:0 1px}
+        .ss-more{width:100%;text-align:left;border:0;background:transparent;font-size:.72rem;font-weight:800;color:#8c6b5d;padding:.4rem .6rem;border-radius:.6rem;cursor:pointer}
+        .ss-more:hover{background:#f2e8e5}
+        .ss-empty{padding:1.5rem 1rem;text-align:center;color:#6b7280;font-size:.8rem}
+        .ss-empty b{color:#362219}
+        .ss-did{display:inline-block;margin-top:.5rem;border:1px solid #d2bab0;background:#fdf8f5;color:#6a4a3c;font-weight:800;border-radius:9999px;padding:.25rem .7rem;font-size:.75rem;cursor:pointer}
+        .ss-tip{padding:.2rem .6rem .6rem;font-size:.7rem;color:#8c6b5d;line-height:1.5}
+        .ss-tip code{background:#f2e8e5;border-radius:.3rem;padding:0 .3rem;font-weight:700;cursor:pointer}
+        #ss-footer{display:flex;justify-content:space-between;align-items:center;gap:.5rem;border-top:1px solid #f2e8e5;background:#fdf8f5;padding:.45rem .85rem;font-size:.65rem;color:#8c6b5d;font-weight:600}
+        #ss-footer button{border:0;background:transparent;color:#6a4a3c;font-weight:800;cursor:pointer;font-size:.65rem}
+        #ss-modal{display:none;position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:1rem}
+        #ss-modal.on{display:flex}
+        .ssm-card{background:#fff;border-radius:1.5rem;width:100%;max-width:34rem;max-height:90vh;overflow-y:auto;box-shadow:0 25px 50px -12px rgba(0,0,0,.4)}
+        .ssm-head{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;padding:1.25rem 1.5rem;border-bottom:1px solid #f2e8e5;position:sticky;top:0;background:#fff;border-radius:1.5rem 1.5rem 0 0}
+        .ssm-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;padding:1rem 1.5rem 0}
+        .ssm-grid div{background:#fdf8f5;border:1px solid #f2e8e5;border-radius:.75rem;padding:.55rem .75rem}
+        .ssm-grid small{display:block;font-size:.6rem;font-weight:800;text-transform:uppercase;color:#a18072;letter-spacing:.05em}
+        .ssm-grid span{font-size:.85rem;font-weight:700;color:#362219}
+        .ssm-rec{border:1px solid #eaddd7;border-radius:1rem;padding:.85rem;margin-top:.7rem}
+        .ssm-x{border:0;background:#f3f4f6;border-radius:9999px;width:2rem;height:2rem;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:#6b7280}
+        .ssm-open{border:0;background:#362219;color:#fff;font-weight:800;font-size:.72rem;border-radius:.6rem;padding:.45rem .8rem;cursor:pointer}
+        @media(max-width:639px){
+            #ss-toggle{display:flex}
+            #ss-wrap:not(.ss-open) #ss-field{display:none}
+            #ss-wrap.ss-open #ss-toggle{display:none}
+            #ss-wrap.ss-open #ss-field{position:fixed;left:.5rem;right:.5rem;top:.6rem;width:auto;height:2.8rem;border-radius:.9rem}
+            #ss-wrap.ss-open #ss-close{display:flex}
+            #ss-wrap.ss-open #ss-clear{display:none}
+            #ss-input{font-size:16px}
+            #ss-panel{top:3.75rem}
+            #ss-footer .ss-keys{display:none}
+        }
+        @media print{#ss-wrap,#ss-modal{display:none !important}}
+    </style>
 </head>
 <body class="min-h-screen bg-misdo-50 font-sans text-gray-800 selection:bg-misdo-200">
 
@@ -43,6 +112,22 @@
                 <span class="font-black text-misdo-900 text-sm sm:text-lg md:text-xl tracking-wide uppercase truncate">Seleksi Teknis Crew <span class="text-[#d32f2f]">Mister Donut</span></span>
             </div>
             <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                <div id="ss-wrap" class="ss-off no-print">
+                    <div id="ss-backdrop"></div>
+                    <button id="ss-toggle" type="button" aria-label="Buka pencarian"><i data-lucide="search" class="w-4 h-4"></i></button>
+                    <div id="ss-field" role="search">
+                        <i data-lucide="search" class="w-4 h-4 shrink-0 text-misdo-500"></i>
+                        <input id="ss-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Cari peserta, form, draft…" aria-label="Pencarian pintar" role="combobox" aria-expanded="false" aria-controls="ss-results" aria-autocomplete="list">
+                        <kbd id="ss-kbd">/</kbd>
+                        <button id="ss-clear" type="button" aria-label="Hapus pencarian"><i data-lucide="x" class="w-3 h-3"></i></button>
+                        <button id="ss-close" type="button" aria-label="Tutup pencarian"><i data-lucide="x" class="w-3 h-3"></i></button>
+                    </div>
+                    <div id="ss-panel">
+                        <div id="ss-chips"></div>
+                        <div id="ss-results" role="listbox" aria-label="Hasil pencarian"></div>
+                        <div id="ss-footer"><span class="ss-keys">↑↓ pilih · Enter buka · Esc tutup</span><span id="ss-status" aria-live="polite"></span></div>
+                    </div>
+                </div>
                 <div id="etd-notification-bell" class="relative hidden cursor-pointer" onclick="window.showETDNotifications()">
                     <i data-lucide="bell" class="w-5 h-5 sm:w-6 sm:h-6 text-misdo-800 hover:text-misdo-600 transition-colors"></i>
                     <div id="etd-notification-dot" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-600 rounded-full hidden border-2 border-white"></div>
@@ -1186,11 +1271,31 @@
             }
         }
 
+        // ===== Utilitas cetak PDF (A4, margin diatur lewat spacer tabel agar tetap aman walau opsi "Margins" browser diubah) =====
+        window.ppEsc = function(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); };
+
+        window.ppNow = function() {
+            const d = new Date(), z = n => String(n).padStart(2, '0');
+            return `${z(d.getDate())}-${z(d.getMonth()+1)}-${d.getFullYear()} &middot; ${z(d.getHours())}:${z(d.getMinutes())}:${z(d.getSeconds())}`;
+        };
+        window.ppFmtDate = function(v) {
+            const m = String(v ?? '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+            return m ? `${m[3]}-${m[2]}-${m[1]}` : (v || '-');
+        };
+
+        window.ppRunPrint = function(container, html, delay) {
+            container.innerHTML = html;
+            const imgs = Array.from(container.querySelectorAll('img'));
+            const ready = Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(r => { img.onload = img.onerror = r; })));
+            ready.then(() => setTimeout(() => { window.print(); setTimeout(() => { container.innerHTML = ''; }, 1000); }, delay));
+        };
+
         window.printRekapanTable = function() {
             const container = document.getElementById('print-container');
             const yearSelect = document.getElementById('mo-year-filter-rekap'); const batchSelect = document.getElementById('mo-batch-filter-rekap');
             const yearFilter = yearSelect.options[yearSelect.selectedIndex]?.text || '-'; const batchFilter = batchSelect.options[batchSelect.selectedIndex]?.text || '-';
-            
+            const E = window.ppEsc;
+
             // Bersihkan kelas yang mengunci lebar kolom, ukuran font, dan border Tailwind agar 100% seragam
             const cleanHtml = (htmlStr) => {
                 return htmlStr
@@ -1198,65 +1303,125 @@
                     .replace(/whitespace-nowrap/g, 'whitespace-normal')
                     .replace(/text-(xs|sm|base|lg|xl|2xl)/g, '')
                     .replace(/text-\[\d+px\]/g, '')
-                    .replace(/border-[a-zA-Z0-9-]+/g, ''); // Hapus class border Tailwind untuk mencegah glitch border tak sejajar
+                    .replace(/border-[a-zA-Z0-9-]+/g, '');
             };
 
-            let tableHead = cleanHtml(document.querySelector('#view-rekapan thead').innerHTML);
-            let tableBody = cleanHtml(document.getElementById('mo-rekapan-tbody').innerHTML);
-            
-            let html = `<div style="background: white; color: black; font-family: sans-serif; width: 100%;">
-                <style>
-                    @page { size: landscape; margin: 4mm; } 
-                    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-                    /* Paksa semua teks di tabel menjadi ukuran seragam dan fix border glitch */
-                    table { width: 100%; border-collapse: collapse; table-layout: auto; border: 1px solid #000; } 
-                    table, table * { font-size: 7px !important; line-height: 1.3 !important; }
-                    th, td { border: 1px solid #000 !important; padding: 3px !important; vertical-align: middle; overflow-wrap: break-word; word-break: normal !important; min-width: 0 !important; width: auto !important; white-space: normal !important; } 
-                    
-                    /* Kunci kolom No (1) dan ID Pelamar (3) agar selalu utuh satu baris lurus */
-                    th:nth-child(1), td:nth-child(1), th:nth-child(3), td:nth-child(3) { 
-                        white-space: nowrap !important; 
-                        word-break: keep-all !important; 
-                        min-width: max-content !important; 
-                        width: 1% !important; 
-                    }
-                    
-                    th { background-color: #362219 !important; color: white !important; text-align: center; font-weight: bold; } 
-                    .text-center { text-align: center; } 
-                    button, select { display: none !important; } 
-                    svg { display: none !important; } 
-                    .line-clamp-3 { -webkit-line-clamp: unset !important; overflow: visible !important; display: block !important; } 
-                    .bg-green-50, .bg-green-100 { background-color: #f0fdf4 !important; } 
-                    .bg-red-50, .bg-red-100 { background-color: #fef2f2 !important; } 
-                    .text-green-700 { color: #15803d !important; } 
-                    .text-red-700 { color: #b91c1c !important; } 
-                    div, span, p { white-space: normal !important; word-break: normal !important; }
-                    .inline-block { white-space: nowrap !important; word-break: normal !important; }
-                </style>
-                <div style="text-align: center; margin-bottom: 12px;">
-                    <h2 style="font-size: 14px !important; font-weight: 900; margin: 0; text-transform: uppercase; color: #362219;">Rekapan Penilaian OJT</h2>
-                    <p style="font-size: 9px !important; margin: 4px 0 0 0;">Filter Tahun: ${yearFilter} | Batch: ${batchFilter}</p>
-                </div>
-                <table><thead>${tableHead}</thead><tbody>${tableBody}</tbody></table>
-            </div>`;
-            container.innerHTML = html; setTimeout(() => { window.print(); setTimeout(() => { container.innerHTML = ''; }, 1000); }, 300);
+            const headRow = document.querySelector('#view-rekapan thead tr');
+            const cols = headRow.children.length;
+            const headCells = cleanHtml(headRow.innerHTML);
+            const bodyRows = cleanHtml(document.getElementById('mo-rekapan-tbody').innerHTML);
+
+            // Margin kertas (mm): atas/bawah dibuat lewat baris spacer yang berulang di setiap halaman
+            const M_TOP = 12, M_BOTTOM = 12, M_SIDE = 10;
+
+            const html = `<style>
+                @page { size: A4 landscape; margin: 0; }
+                html, body { height: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }
+                #print-container, #print-container * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                #print-container { width: 100%; background: #fff; color: #000; font-family: Arial, Helvetica, sans-serif; }
+                .pp-wrap { padding: 0 ${M_SIDE}mm; }
+                .pp-data { width: 100%; border-collapse: collapse; table-layout: auto; }
+                .pp-data > thead { display: table-header-group; } .pp-data > tfoot { display: table-footer-group; }
+                .pp-data td.pp-plain { border: 0 !important; padding: 0; background: #fff !important; }
+                .pp-data th, .pp-data tbody td { border: 0.5pt solid #000 !important; padding: 3px 3.5px !important; font-size: 7.5px !important; line-height: 1.35 !important; vertical-align: middle; overflow-wrap: break-word; word-break: normal !important; min-width: 0 !important; width: auto !important; white-space: normal !important; }
+                .pp-data th *, .pp-data tbody td * { font-size: 7.5px !important; line-height: 1.35 !important; }
+                .pp-data tbody tr { break-inside: avoid; page-break-inside: avoid; }
+                .pp-data th { background-color: #362219 !important; color: #fff !important; text-align: center; font-weight: bold; }
+                /* Kolom No (1) dan ID Pelamar (3) selalu satu baris lurus */
+                .pp-data th:nth-child(1), .pp-data tbody td:nth-child(1), .pp-data th:nth-child(3), .pp-data tbody td:nth-child(3) { white-space: nowrap !important; word-break: keep-all !important; min-width: max-content !important; width: 1% !important; }
+                .pp-data .text-center { text-align: center; }
+                .pp-data button, .pp-data select, .pp-data svg { display: none !important; }
+                .pp-data .line-clamp-3 { -webkit-line-clamp: unset !important; overflow: visible !important; display: block !important; }
+                .pp-data .bg-green-50, .pp-data .bg-green-100 { background-color: #f0fdf4 !important; }
+                .pp-data .bg-red-50, .pp-data .bg-red-100 { background-color: #fef2f2 !important; }
+                .pp-data .text-green-700 { color: #15803d !important; } .pp-data .text-red-700 { color: #b91c1c !important; }
+                .pp-data tbody div, .pp-data tbody span, .pp-data tbody p { white-space: normal !important; word-break: normal !important; }
+                .pp-data .inline-block { white-space: nowrap !important; word-break: normal !important; }
+            </style>
+            <div class="pp-wrap"><table class="pp-data">
+                <thead>
+                    <tr><td colspan="${cols}" class="pp-plain" style="padding: ${M_TOP}mm 0 3mm 0 !important;"><div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 10px;"><span style="font-size: 14px; font-weight: 900; text-transform: uppercase; color: #362219;">Rekapan Penilaian OJT</span><span style="font-size: 9px;">Dicetak pada : ${window.ppNow()}</span></div></td></tr>
+                    <tr>${headCells}</tr>
+                </thead>
+                <tbody>${bodyRows}</tbody>
+                <tfoot><tr><td colspan="${cols}" class="pp-plain" style="height: ${M_BOTTOM}mm;"></td></tr></tfoot>
+            </table></div>`;
+            window.ppRunPrint(container, html, 300);
         }
 
         window.generateAndPrintPDF = function() {
-            const container = document.getElementById('print-container'); let html = '';
-            for (let i = 0; i < window.globalStore.participantCount; i++) {
-                const p = window.globalStore.selectedParticipants[i]; const pName = p ? p.namaPeserta : `Peserta ${i+1}`; const pId = p ? p.idPelamar : '-'; const s14 = window.participants_scale14[i] || {scores:{}}; const bev = window.scores_beverage[i] || {}; const sd = window.scores_sidedish[i] || {};
-                html += `<div class="${i > 0 ? 'page-break' : ''}" style="background: white; color: black; font-family: sans-serif; padding: 20px;"><style>@page { size: portrait; margin: 10mm; }</style><div style="text-align: center; border-bottom: 2px solid #362219; padding-bottom: 10px; margin-bottom: 20px;"><h2 style="font-size: 20px; font-weight: 900; margin: 0; text-transform: uppercase; color: #362219;">Lembar Penilaian OJT</h2><h3 style="font-size: 16px; font-weight: bold; margin: 5px 0 10px 0; color: #000;">${pName}</h3><p style="font-size: 12px; margin: 3px 0 0 0;"><b>ID Pelamar:</b> ${pId} | <b>Batch:</b> ${window.globalStore.batch} | <b>Lokasi:</b> ${window.globalStore.flagship}</p><p style="font-size: 12px; margin: 3px 0 0 0;"><b>Mentor:</b> ${window.globalStore.mentorName} | <b>Tanggal:</b> ${window.globalStore.date}</p></div><h3 style="font-size: 12px; font-weight: bold; background: #eaddd7; padding: 5px 10px; border-left: 4px solid #362219; margin-bottom: 10px;">1. ASPEK PENILAIAN (TEKNIS & NON TEKNIS)</h3><table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 15px;"><tr><th style="border: 1px solid #ccc; padding: 6px; text-align: left; background: #fdf8f5;">Kriteria</th><th style="border: 1px solid #ccc; padding: 6px; width: 60px; text-align: center; background: #fdf8f5;">Nilai</th></tr>`;
-                let tot14 = 0; scale14Categories.forEach(sec => { html += `<tr><td colspan="2" style="border: 1px solid #ccc; padding: 6px; background: #f2e8e5; font-weight: bold; font-size: 9px;">${sec.category}</td></tr>`; sec.items.forEach(item => { const val = s14.scores[item.id] || '-'; if (val !== '-') tot14 += parseInt(val); html += `<tr><td style="border: 1px solid #ccc; padding: 6px;">${item.name}</td><td style="border: 1px solid #ccc; padding: 6px; text-align: center; font-weight: bold; font-size: 12px;">${val}</td></tr>`; }); });
-                const avg14 = (tot14 / 6).toFixed(2); html += `<tr><td style="border: 1px solid #ccc; padding: 6px; text-align: right; font-weight: bold; background: #fdf8f5;">Total Skor:</td><td style="border: 1px solid #ccc; padding: 6px; text-align: center; font-weight: bold;">${tot14}</td></tr><tr><td style="border: 1px solid #ccc; padding: 6px; text-align: right; font-weight: bold; background: #fdf8f5;">Rata-rata:</td><td style="border: 1px solid #ccc; padding: 6px; text-align: center; font-weight: bold; color: #d32f2f;">${avg14}</td></tr></table><div style="font-size: 10px; margin-bottom: 20px; border: 1px dashed #ccc; padding: 10px; border-radius: 5px;"><p style="margin: 0 0 5px 0;"><b>Hal yang perlu ditingkatkan:</b><br/>${s14.improvements || '-'}</p><p style="margin: 0;"><b>Hal yang perlu dipertahankan:</b><br/>${s14.strengths || '-'}</p></div><h3 style="font-size: 12px; font-weight: bold; background: #eaddd7; padding: 5px 10px; border-left: 4px solid #362219; margin-bottom: 10px;">2. TES PRAKTIK BEVERAGE</h3><table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 10px;"><tr><th style="border: 1px solid #ccc; padding: 5px; text-align: left; background: #fdf8f5;">Minuman</th><th style="border: 1px solid #ccc; padding: 5px; width: 60px; background: #fdf8f5;">Time</th><th style="border: 1px solid #ccc; padding: 5px; width: 60px; background: #fdf8f5;">Size</th><th style="border: 1px solid #ccc; padding: 5px; width: 60px; text-align: center; background: #fdf8f5;">Nilai</th></tr>`;
-                let totBev = 0, cntBev = 0; beverages.forEach(b => { const sc = bev[b.id] || {time:'-', size:'-', nilai:'-'}; if(sc.nilai && !isNaN(sc.nilai)) { totBev += parseFloat(sc.nilai); cntBev++; } html += `<tr><td style="border: 1px solid #ccc; padding: 5px;">${b.name}</td><td style="border: 1px solid #ccc; padding: 5px; text-align: center;">${sc.time||'-'}</td><td style="border: 1px solid #ccc; padding: 5px; text-align: center;">${sc.size||'-'}</td><td style="border: 1px solid #ccc; padding: 5px; text-align: center; font-weight: bold;">${sc.nilai||'-'}</td></tr>`; });
-                const avgBev = cntBev > 0 ? (totBev/cntBev).toFixed(2) : 0; html += `<tr><td colspan="3" style="border: 1px solid #ccc; padding: 5px; text-align: right; font-weight: bold; background: #fdf8f5;">Rata-rata:</td><td style="border: 1px solid #ccc; padding: 5px; text-align: center; font-weight: bold; color: #d32f2f;">${avgBev}</td></tr></table><div style="font-size: 10px; margin-bottom: 20px; padding: 5px; border-bottom: 1px dotted #ccc;"><b>Komentar Shift (Beverage):</b> ${window.globalStore.commentsBeverage || '-'}</div><h3 style="font-size: 12px; font-weight: bold; background: #eaddd7; padding: 5px 10px; border-left: 4px solid #362219; margin-bottom: 10px;">3. TES PRAKTIK SIDE DISH</h3><table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 10px;"><tr><th style="border: 1px solid #ccc; padding: 5px; text-align: left; background: #fdf8f5;">Menu</th><th style="border: 1px solid #ccc; padding: 5px; width: 60px; background: #fdf8f5;">Time</th><th style="border: 1px solid #ccc; padding: 5px; width: 60px; background: #fdf8f5;">Size</th><th style="border: 1px solid #ccc; padding: 5px; width: 60px; text-align: center; background: #fdf8f5;">Nilai</th></tr>`;
-                let totSD = 0, cntSD = 0; sideDishes.forEach(d => { const sc = sd[d.id] || {time:'-', size:'-', nilai:'-'}; if(sc.nilai && !isNaN(sc.nilai)) { totSD += parseFloat(sc.nilai); cntSD++; } html += `<tr><td style="border: 1px solid #ccc; padding: 5px;">${d.name}</td><td style="border: 1px solid #ccc; padding: 5px; text-align: center;">${sc.time||'-'}</td><td style="border: 1px solid #ccc; padding: 5px; text-align: center;">${sc.size||'-'}</td><td style="border: 1px solid #ccc; padding: 5px; text-align: center; font-weight: bold;">${sc.nilai||'-'}</td></tr>`; });
-                const avgSD = cntSD > 0 ? (totSD/cntSD).toFixed(2) : 0; html += `<tr><td colspan="3" style="border: 1px solid #ccc; padding: 5px; text-align: right; font-weight: bold; background: #fdf8f5;">Rata-rata:</td><td style="border: 1px solid #ccc; padding: 5px; text-align: center; font-weight: bold; color: #d32f2f;">${avgSD}</td></tr></table><div style="font-size: 10px; margin-bottom: 20px; padding: 5px; border-bottom: 1px dotted #ccc;"><b>Komentar Shift (Side Dish):</b> ${window.globalStore.commentsSideDish || '-'}</div><div style="margin-top: 15px; font-size: 11px;"><p><b>Status Rekomendasi Mentor:</b> <span style="padding: 2px 6px; border: 1px solid #000; border-radius: 4px; font-weight: bold; background: ${s14.status === 'Tidak Diluluskan' ? '#fee2e2' : '#dcfce7'}; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${s14.status || 'Diluluskan'}</span></p>${s14.status === 'Tidak Diluluskan' ? `<p><b>Alasan Penolakan:</b> ${s14.rejectionReason || '-'}</p>` : ''}</div><div style="margin-top: 30px; display: flex; justify-content: space-between; text-align: center; font-size: 11px;"><div style="width: 45%;"><p style="margin-bottom: 10px;">Mentor,</p>${window.globalStore.signatureDataUrl ? `<img src="${window.globalStore.signatureDataUrl}" style="height: 50px; object-fit: contain; margin: 0 auto; display: block;" />` : `<div style="height: 50px;"></div>`}<p style="font-weight: bold; text-decoration: underline; margin-top: 5px;">${window.globalStore.mentorName || '-'}</p></div>`;
+            const container = document.getElementById('print-container');
+            const E = window.ppEsc;
+            const M_TOP = 14, M_BOTTOM = 14, M_SIDE = 15;
+            const gs = window.globalStore;
+            const css = `<style>
+                @page { size: A4 portrait; margin: 0; }
+                html, body { height: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }
+                #print-container, #print-container * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                #print-container { width: 100%; background: #fff; color: #000; font-family: Arial, Helvetica, sans-serif; }
+                .lp-sheet { width: 100%; border-collapse: collapse; border: 0; }
+                .lp-sheet > thead { display: table-header-group; } .lp-sheet > tfoot { display: table-footer-group; }
+                .lp-sheet > thead > tr > td, .lp-sheet > tbody > tr > td, .lp-sheet > tfoot > tr > td { padding: 0; border: 0; }
+                .lp-new { break-before: page; page-break-before: always; }
+                .lp-top { height: ${M_TOP}mm; vertical-align: bottom !important; padding: 0 ${M_SIDE}mm 3mm ${M_SIDE}mm !important; font-size: 8px; color: #8c6b5d; }
+                .lp-bot { height: ${M_BOTTOM}mm; }
+                .lp-body { padding: 0 ${M_SIDE}mm !important; vertical-align: top; }
+                .lp-keep { break-inside: avoid; page-break-inside: avoid; }
+                .lp-head { text-align: center; border-bottom: 2px solid #362219; padding-bottom: 10px; margin-bottom: 16px; }
+                .lp-head h2 { font-size: 20px; font-weight: 900; margin: 0; text-transform: uppercase; color: #362219; }
+                .lp-head h3 { font-size: 16px; font-weight: bold; margin: 5px 0 10px 0; color: #000; }
+                .lp-head p { font-size: 12px; margin: 3px 0 0 0; }
+                .lp-h3 { font-size: 12px; font-weight: bold; background: #eaddd7; padding: 5px 10px; border-left: 4px solid #362219; margin: 0 0 8px 0; break-after: avoid; page-break-after: avoid; }
+                .lp-tbl { width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 12px; }
+                .lp-tbl tr { break-inside: avoid; page-break-inside: avoid; }
+                .lp-tbl th, .lp-tbl td { border: 1px solid #ccc; padding: 5px 6px; }
+                .lp-tbl th { text-align: left; background: #fdf8f5; }
+                .lp-tbl .c { text-align: center; } .lp-tbl .r { text-align: right; font-weight: bold; background: #fdf8f5; }
+                .lp-tbl .w { width: 60px; }
+                .lp-cat { background: #f2e8e5 !important; font-weight: bold; font-size: 9px; }
+                .lp-avg { text-align: center; font-weight: bold; color: #d32f2f; }
+                .lp-box { font-size: 10px; margin-bottom: 18px; border: 1px dashed #ccc; padding: 10px; border-radius: 5px; }
+                .lp-note { font-size: 10px; margin-bottom: 18px; padding: 5px; border-bottom: 1px dotted #ccc; }
+                .lp-status { margin-top: 6px; font-size: 11px; }
+                .lp-status p { margin: 0 0 6px 0; }
+                .lp-sign { margin-top: 24px; display: flex; justify-content: space-between; align-items: flex-start; text-align: center; font-size: 11px; }
+            </style>`;
+            let html = css;
+            for (let i = 0; i < gs.participantCount; i++) {
+                const p = gs.selectedParticipants[i]; const pName = p ? p.namaPeserta : `Peserta ${i+1}`; const pId = p ? p.idPelamar : '-';
+                const s14 = window.participants_scale14[i] || {scores:{}}; const bev = window.scores_beverage[i] || {}; const sd = window.scores_sidedish[i] || {};
+
+                // 1. Teknis & Non Teknis
+                let tot14 = 0; let rows14 = '';
+                scale14Categories.forEach(sec => {
+                    rows14 += `<tr><td colspan="2" class="lp-cat">${E(sec.category)}</td></tr>`;
+                    sec.items.forEach(item => { const val = s14.scores[item.id] || '-'; if (val !== '-') tot14 += parseInt(val); rows14 += `<tr><td>${E(item.name)}</td><td class="c" style="font-weight: bold; font-size: 12px;">${E(val)}</td></tr>`; });
+                });
+                const avg14 = (tot14 / 6).toFixed(2);
+                const sec1 = `<div class="lp-keep"><h3 class="lp-h3">1. ASPEK PENILAIAN (TEKNIS & NON TEKNIS)</h3><table class="lp-tbl"><tr><th>Kriteria</th><th class="c w">Nilai</th></tr>${rows14}<tr><td class="r">Total Skor:</td><td class="c" style="font-weight: bold;">${tot14}</td></tr><tr><td class="r">Rata-rata:</td><td class="lp-avg">${avg14}</td></tr></table><div class="lp-box"><p style="margin: 0 0 5px 0;"><b>Hal yang perlu ditingkatkan:</b><br/>${E(s14.improvements || '-')}</p><p style="margin: 0;"><b>Hal yang perlu dipertahankan:</b><br/>${E(s14.strengths || '-')}</p></div></div>`;
+
+                // 2. Beverage
+                let totBev = 0, cntBev = 0; let rowsBev = '';
+                beverages.forEach(b => { const sc = bev[b.id] || {time:'-', size:'-', nilai:'-'}; if (sc.nilai && !isNaN(sc.nilai)) { totBev += parseFloat(sc.nilai); cntBev++; } rowsBev += `<tr><td>${E(b.name)}</td><td class="c">${E(sc.time||'-')}</td><td class="c">${E(sc.size||'-')}</td><td class="c" style="font-weight: bold;">${E(sc.nilai||'-')}</td></tr>`; });
+                const avgBev = cntBev > 0 ? (totBev/cntBev).toFixed(2) : 0;
+                const sec2 = `<div class="lp-keep"><h3 class="lp-h3">2. TES PRAKTIK BEVERAGE</h3><table class="lp-tbl"><tr><th>Minuman</th><th class="c w">Time</th><th class="c w">Size</th><th class="c w">Nilai</th></tr>${rowsBev}<tr><td colspan="3" class="r">Rata-rata:</td><td class="lp-avg">${avgBev}</td></tr></table><div class="lp-note"><b>Komentar Shift (Beverage):</b> ${E(gs.commentsBeverage || '-')}</div></div>`;
+
+                // 3. Side Dish
+                let totSD = 0, cntSD = 0; let rowsSD = '';
+                sideDishes.forEach(d => { const sc = sd[d.id] || {time:'-', size:'-', nilai:'-'}; if (sc.nilai && !isNaN(sc.nilai)) { totSD += parseFloat(sc.nilai); cntSD++; } rowsSD += `<tr><td>${E(d.name)}</td><td class="c">${E(sc.time||'-')}</td><td class="c">${E(sc.size||'-')}</td><td class="c" style="font-weight: bold;">${E(sc.nilai||'-')}</td></tr>`; });
+                const avgSD = cntSD > 0 ? (totSD/cntSD).toFixed(2) : 0;
+                const sec3 = `<div class="lp-keep"><h3 class="lp-h3">3. TES PRAKTIK SIDE DISH</h3><table class="lp-tbl"><tr><th>Menu</th><th class="c w">Time</th><th class="c w">Size</th><th class="c w">Nilai</th></tr>${rowsSD}<tr><td colspan="3" class="r">Rata-rata:</td><td class="lp-avg">${avgSD}</td></tr></table><div class="lp-note"><b>Komentar Shift (Side Dish):</b> ${E(gs.commentsSideDish || '-')}</div></div>`;
+
+                // Status + tanda tangan
                 const uApp = (window.userApprovals && window.userApprovals[i]) ? window.userApprovals[i] : {status: 'PENDING'}; const mApp = (window.moApprovals && window.moApprovals[i]) ? window.moApprovals[i] : {status: 'PENDING'};
-                html += `<div style="width: 45%; border: 1px dashed #ccc; padding: 10px; background: #fdf8f5; -webkit-print-color-adjust: exact; print-color-adjust: exact;"><p style="margin: 0 0 10px 0; font-size: 10px; color: #8c6b5d;">Validasi Final (Otomatis Sistem)</p><p style="font-size: 12px; font-weight: bold; margin: 5px 0;">USER: ${uApp.status==='OK'?'<span style="color:green;">OK</span>':uApp.status==='NOK'?'<span style="color:red;">NOK</span>':'PENDING'}</p><p style="font-size: 12px; font-weight: bold; margin: 5px 0;">MO: ${mApp.status==='ACCEPT'||mApp.status==='OK'?'<span style="color:green;">ACCEPT</span>':mApp.status==='REJECT'||mApp.status==='NOK'?'<span style="color:red;">REJECT</span>':'PENDING'}</p></div></div></div>`; 
+                const sigHtml = gs.signatureDataUrl ? `<img src="${gs.signatureDataUrl}" style="height: 50px; object-fit: contain; margin: 0 auto; display: block;" />` : `<div style="height: 50px;"></div>`;
+                const secEnd = `<div class="lp-keep"><div class="lp-status"><p><b>Status Rekomendasi Mentor:</b> <span style="padding: 2px 6px; border: 1px solid #000; border-radius: 4px; font-weight: bold; background: ${s14.status === 'Tidak Diluluskan' ? '#fee2e2' : '#dcfce7'};">${E(s14.status || 'Diluluskan')}</span></p>${s14.status === 'Tidak Diluluskan' ? `<p><b>Alasan Penolakan:</b> ${E(s14.rejectionReason || '-')}</p>` : ''}</div><div class="lp-sign"><div style="width: 45%;"><p style="margin: 0 0 10px 0;">Mentor,</p>${sigHtml}<p style="font-weight: bold; text-decoration: underline; margin: 5px 0 0 0;">${E(gs.mentorName || '-')}</p></div><div style="width: 45%; border: 1px dashed #ccc; padding: 10px; background: #fdf8f5;"><p style="margin: 0 0 10px 0; font-size: 10px; color: #8c6b5d;">Validasi Final (Otomatis Sistem)</p><p style="font-size: 12px; font-weight: bold; margin: 5px 0;">USER: ${uApp.status==='OK'?'<span style="color:green;">OK</span>':uApp.status==='NOK'?'<span style="color:red;">NOK</span>':'PENDING'}</p><p style="font-size: 12px; font-weight: bold; margin: 5px 0;">MO: ${mApp.status==='ACCEPT'||mApp.status==='OK'?'<span style="color:green;">ACCEPT</span>':mApp.status==='REJECT'||mApp.status==='NOK'?'<span style="color:red;">REJECT</span>':'PENDING'}</p></div></div></div>`;
+
+                const head = `<div class="lp-head"><h2>Lembar Penilaian OJT</h2><h3>${E(pName)}</h3><p><b>ID Pelamar:</b> ${E(pId)} | <b>Batch:</b> ${E(gs.batch)} | <b>Lokasi:</b> ${E(gs.flagship)}</p><p><b>Mentor:</b> ${E(gs.mentorName)} | <b>Tanggal:</b> ${E(window.ppFmtDate(gs.date))}</p></div>`;
+
+                html += `<table class="lp-sheet ${i > 0 ? 'lp-new' : ''}"><thead><tr><td class="lp-top">Lembar Penilaian OJT &middot; ${E(pName)} (${E(pId)}) &middot; Dicetak pada : ${window.ppNow()}</td></tr></thead><tfoot><tr><td class="lp-bot"></td></tr></tfoot><tbody><tr><td class="lp-body">${head}${sec1}${sec2}${sec3}${secEnd}</td></tr></tbody></table>`;
             }
-            container.innerHTML = html; setTimeout(() => { window.print(); setTimeout(() => { container.innerHTML = ''; }, 1000); }, 200); 
+            window.ppRunPrint(container, html, 200);
         }
 
         let signatureGlobal = { canvas: null, ctx: null, isDrawing: false };
@@ -1274,6 +1439,471 @@
         window.syncSignatureToForms = function() { const dataUrl = signatureGlobal.canvas.toDataURL(); window.globalStore.signatureDataUrl = dataUrl; document.querySelectorAll('.display-signature').forEach(img => img.src = dataUrl); }
 
         window.onload = function() { if(window.initGlobalSignature) window.initGlobalSignature(); if(window.lucide) window.lucide.createIcons(); }
+    </script>
+    <script type="module" id="ss-script">
+        /* ===== Smart Search (tambahan) ===== */
+        import { getApps } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const fold = (s) => {
+    s = String(s ?? ''); let out = '';
+    for (let i = 0; i < s.length; i++) {
+        const f = s[i].normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        out += f.length === 1 ? f : s[i];
+    }
+    return out;
+};
+const words = (f) => f.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+const mkField = (text, w) => { const t = fold(text); return { text: t, words: words(t), w }; };
+
+// Jarak edit Damerau-Levenshtein dengan batas maksimum (untuk toleransi salah ketik)
+function lev(a, b, max) {
+    const la = a.length, lb = b.length;
+    if (Math.abs(la - lb) > max) return max + 1;
+    let prev2 = null, prev = Array.from({ length: lb + 1 }, (_, j) => j);
+    for (let i = 1; i <= la; i++) {
+        const cur = [i]; let rowMin = i;
+        for (let j = 1; j <= lb; j++) {
+            let v = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+            if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) v = Math.min(v, prev2[j - 2] + 1);
+            cur[j] = v; if (v < rowMin) rowMin = v;
+        }
+        if (rowMin > max) return max + 1;
+        prev2 = prev; prev = cur;
+    }
+    return prev[lb];
+}
+
+// Skor 0..1 satu token terhadap satu field: exact > awalan > mengandung > typo
+function tokenScore(tok, f) {
+    let best = 0;
+    const maxD = tok.length >= 7 ? 2 : 1;
+    for (const w of f.words) {
+        if (w === tok) return 1;
+        if (w.startsWith(tok)) { best = Math.max(best, 0.85); continue; }
+        if (tok.length >= 3 && w.includes(tok)) { best = Math.max(best, 0.6); continue; }
+        if (tok.length >= 4 && best < 0.5) {
+            if (tok.length === 4) {
+                // kata pendek: hanya toleransi huruf tertukar (budi ↔ bdui), agar "budi" tidak cocok dengan "rudi"
+                if (w.length === 4 && [...tok].sort().join('') === [...w].sort().join('')) best = Math.max(best, 0.5);
+            } else {
+                const d = lev(tok, w, maxD);
+                if (d <= maxD) best = Math.max(best, 0.5 - 0.1 * (d - 1));
+                else if (w.length > tok.length && lev(tok, w.slice(0, tok.length), 1) <= 1) best = Math.max(best, 0.4);
+            }
+        }
+    }
+    return best;
+}
+
+function scoreFields(fields, req, soft) {
+    let total = 0;
+    for (const tok of req) {
+        let b = 0;
+        for (const f of fields) { const s = tokenScore(tok, f) * f.w; if (s > b) b = s; }
+        if (b <= 0) return 0;
+        total += b;
+    }
+    for (const tok of soft) {
+        let b = 0;
+        for (const f of fields) { const s = tokenScore(tok, f); if (s >= 0.85) b = Math.max(b, s * f.w * 0.3); }
+        total += b;
+    }
+    if (req.length > 1 && fields[0] && fields[0].text.includes(req.join(' '))) total += 6;
+    return total;
+}
+
+const LULUS = new Set(['lulus', 'diluluskan', 'lolos', 'meluluskan']);
+const PENDING = new Set(['pending', 'menunggu', 'antrean', 'antri', 'belum']);
+const APPROVED = new Set(['approved', 'disetujui']);
+const TYPE_WORDS = { draft: 'draft', drafts: 'draft', peserta: 'participant', crew: 'participant', participant: 'participant', form: 'form', penilaian: 'form', riwayat: 'form', terkirim: 'form', sampah: 'trash', trash: 'trash', terhapus: 'trash' };
+const STOP = new Set(['batch', 'tahun', 'mentor', 'store', 'lokasi', 'nama', 'id', 'di', 'yang', 'dan', 'untuk', 'dari', 'oleh', 'ke', 'pada', 'dengan', 'ojt', 'approve', 'etd', 'user', 'mo', 'validasi', 'status', 'nilai', 'data', 'cari', 'semua', 'tolong', 'tampilkan', 'lihat']);
+
+// Memahami maksud kueri: filter status, jenis data, dan kata kunci teks
+function parseQuery(raw) {
+    const toks = words(fold(String(raw).trim()));
+    const q = { toks, status: {}, types: new Set(), typeToks: [], req: [], soft: [] };
+    const rest = [];
+    for (let i = 0; i < toks.length; i++) {
+        const t = toks[i], n = toks[i + 1];
+        if ((t === 'tidak' || t === 'belum') && n && LULUS.has(n)) { q.status.mentor = 'tidak'; i++; continue; }
+        if (LULUS.has(t)) { q.status.mentor = 'lulus'; continue; }
+        if (t === 'gagal') { q.status.mentor = 'tidak'; continue; }
+        if (t === 'nok') { q.status.user = 'NOK'; continue; }
+        if (t === 'ok') { q.status.user = 'OK'; continue; }
+        if (t === 'accept' || t === 'diterima') { q.status.mo = 'ACCEPT'; continue; }
+        if (t === 'reject' || t === 'ditolak') { q.status.mo = 'REJECT'; continue; }
+        if (PENDING.has(t)) {
+            // "menunggu approve/etd" = antrean ETD; "menunggu user"/"menunggu mo" = tahap itu; lainnya = tahap mana pun masih pending
+            q.status.pending = toks.includes('approve') || toks.includes('etd') ? 'etd' : toks.includes('mo') ? 'mo' : toks.includes('user') ? 'user' : 'any';
+            continue;
+        }
+        if (APPROVED.has(t)) { q.status.approved = true; continue; }
+        if (TYPE_WORDS[t]) { q.types.add(TYPE_WORDS[t]); q.typeToks.push(t); continue; }
+        rest.push(t);
+    }
+    const hard = rest.filter(t => !STOP.has(t));
+    const hasIntent = q.types.size > 0 || Object.keys(q.status).length > 0;
+    // Kata umum (batch, mentor, approve…) hanya jadi kata kunci wajib bila tidak ada maksud lain
+    q.req = hard.length ? hard : (hasIntent ? [] : rest);
+    q.soft = hard.length ? rest.filter(t => STOP.has(t)) : [];
+    return q;
+}
+
+function passRec(rec, st) {
+    if (st.mentor === 'lulus' && rec.mentorStatus !== 'Diluluskan') return false;
+    if (st.mentor === 'tidak' && rec.mentorStatus === 'Diluluskan') return false;
+    if (st.user && rec.user.status !== st.user) return false;
+    if (st.mo) {
+        const m = rec.mo.status, acc = m === 'ACCEPT' || m === 'OK', rej = m === 'REJECT' || m === 'NOK';
+        if (st.mo === 'ACCEPT' && !acc) return false;
+        if (st.mo === 'REJECT' && !rej) return false;
+    }
+    if (st.approved && !rec.form.isApprovedByETD) return false;
+    if (st.pending === 'etd' && rec.form.isApprovedByETD) return false;
+    // Urutan alur aplikasi: Mentor → ETD approve → User OK/NOK → MO Accept/Reject
+    if (st.pending === 'user' && !(rec.form.isApprovedByETD && rec.user.status === 'PENDING')) return false;
+    if (st.pending === 'mo' && !(rec.form.isApprovedByETD && rec.user.status !== 'PENDING' && rec.mo.status === 'PENDING')) return false;
+    if (st.pending === 'any' && rec.form.isApprovedByETD && rec.user.status !== 'PENDING' && rec.mo.status !== 'PENDING') return false;
+    return true;
+}
+
+// Sorot kata yang cocok pada teks asli (aman dari XSS)
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function highlight(text, toks) {
+    text = String(text ?? ''); if (!text) return '';
+    if (!toks.length) return esc(text);
+    const f = fold(text), ranges = [];
+    for (const t of toks) {
+        if (!t) continue;
+        let i = f.indexOf(t);
+        while (i !== -1) {
+            if (t.length >= 3 || i === 0 || !/[\p{L}\p{N}]/u.test(f[i - 1])) ranges.push([i, i + t.length]);
+            i = f.indexOf(t, i + t.length);
+        }
+    }
+    if (!ranges.length) return esc(text);
+    ranges.sort((a, b) => a[0] - b[0]);
+    const merged = [ranges[0].slice()];
+    for (const r of ranges.slice(1)) { const l = merged[merged.length - 1]; if (r[0] <= l[1]) l[1] = Math.max(l[1], r[1]); else merged.push(r.slice()); }
+    let out = '', pos = 0;
+    for (const [s, e] of merged) { out += esc(text.slice(pos, s)) + '<mark class="ss-mark">' + esc(text.slice(s, e)) + '</mark>'; pos = e; }
+    return out + esc(text.slice(pos));
+}
+const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'mister-donut-ojt';
+const $ = (id) => document.getElementById(id);
+const wrap = $('ss-wrap'), input = $('ss-input'), results = $('ss-results'), chipsEl = $('ss-chips'), statusEl = $('ss-status');
+const MAX_GROUP = 5, MAX_EXPANDED = 25, TTL = 60000;
+const state = { raw: null, items: [], vocab: new Map(), masterRef: null, loadedAt: 0, loading: null, error: false, open: false, active: -1, flat: [], expanded: new Set(), last: null, role: null };
+
+/* ---------- Utilitas tampilan ---------- */
+const fmtDate = (d) => { if (!d) return ''; const x = new Date(String(d).length <= 10 ? d + 'T00:00:00' : d); return isNaN(x) ? String(d) : x.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }); };
+const fmtTime = (t) => t ? new Date(t).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+const uniq = (a) => [...new Set(a.filter(Boolean))];
+const badge = (text, cls) => ({ text, cls });
+const isMobile = () => window.matchMedia('(max-width: 639px)').matches;
+const icons = () => { try { window.lucide && window.lucide.createIcons(); } catch (e) {} };
+
+function avgs(form, i) {
+    const sc = form.participants_scale14?.[i]?.scores;
+    const t14 = sc ? Object.values(sc).reduce((a, b) => a + Number(b), 0) / 6 : 0;
+    const mean = (obj) => { let t = 0, c = 0; Object.values(obj || {}).forEach(x => { const v = parseFloat(x.nilai); if (!isNaN(v)) { t += v; c++; } }); return c ? (t / c).toFixed(2) : '-'; };
+    return { teknis: t14 > 0 ? t14.toFixed(2) : '-', bev: mean(form.scores_beverage?.[i]), sd: mean(form.scores_sidedish?.[i]) };
+}
+
+/* ---------- Pengambilan data ---------- */
+function loadData(force) {
+    if (state.loading) return state.loading;
+    if (!force && state.loadedAt && Date.now() - state.loadedAt < TTL) return Promise.resolve();
+    const work = async () => {
+        try {
+            const app = getApps()[0]; if (!app) throw new Error('no-app');
+            const db = getFirestore(app), base = ['artifacts', APP_ID, 'public', 'data'];
+            const role = window.userRole, canDraft = role === 'MENTOR' || role === 'ETD';
+            const [sub, dr] = await Promise.all([
+                getDocs(collection(db, ...base, 'submitted_forms')),
+                canDraft ? getDocs(collection(db, ...base, 'drafts')) : Promise.resolve(null)
+            ]);
+            const forms = [], trash = [], drafts = [], now = Date.now(), thirty = 30 * 24 * 3600 * 1000;
+            sub.forEach(d => { const x = { id: d.id, ...d.data() }; if (x.isDeleted) { if (role === 'ETD' && now - (x.deletedAt || 0) <= thirty) trash.push(x); } else forms.push(x); });
+            forms.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            if (dr) dr.forEach(d => drafts.push({ id: d.id, ...d.data() }));
+            state.raw = { forms, trash, drafts }; state.loadedAt = Date.now(); state.error = false;
+        } catch (e) { state.error = true; if (!state.raw) state.raw = { forms: [], trash: [], drafts: [] }; }
+        state.masterRef = null;
+    };
+    state.loading = work().then(() => { state.loading = null; if (state.open) run(); });
+    return state.loading;
+}
+
+/* ---------- Membangun indeks sesuai hak akses peran ---------- */
+function menuList(role) {
+    const go = (v) => () => window.showView(v), m = [];
+    const add = (id, title, desc, icon, kw, run) => m.push({ type: 'menu', id, title, desc, icon, run, time: 0, fields: [mkField(title, 10), mkField(kw, 6), mkField(desc, 2)] });
+    const mt = role === 'MENTOR' || role === 'ETD', rv = role === 'MO' || role === 'ETD' || role === 'USER';
+    add('dashboard', 'Dashboard', 'Kembali ke halaman utama', 'home', 'beranda utama home menu', go('dashboard'));
+    if (mt) add('new', 'Buat Penilaian Baru', 'Mulai lembar penilaian OJT baru', 'file-plus-2', 'buat baru tambah form isi mulai', () => window.createNewAssessment());
+    if (mt) add('drafts', 'Lanjutkan / Edit Draft', 'Form yang disimpan sementara', 'folder-clock', 'draft simpan sementara lanjutkan edit', go('drafts'));
+    if (mt) add('history', role === 'ETD' ? 'Antrean Approve ETD' : 'Riwayat Terkirim & Cetak', role === 'ETD' ? 'Setujui penilaian dari mentor' : 'Penilaian final dan unduh PDF', 'check-circle-2', 'riwayat terkirim antrean approve cetak pdf final', go('history'));
+    if (rv) add('rekapan', 'Rekap & Persetujuan', 'Rekap nilai per batch, stempel persetujuan', 'clipboard-signature', 'rekap rekapan persetujuan stempel tabel cetak', go('rekapan'));
+    if (rv) add('hasil', 'Hasil Penilaian Mentor', 'Form penilaian utuh per peserta', 'book-open', 'hasil mentor penilaian form utuh', go('hasil-mentor'));
+    if (role === 'ETD') add('trash', 'Tempat Sampah', 'Data terhapus (30 hari)', 'trash-2', 'sampah trash hapus pulihkan restore', go('trash'));
+    return m;
+}
+
+function buildIndex() {
+    const role = window.userRole, raw = state.raw || { forms: [], trash: [], drafts: [] };
+    const canMaster = role === 'MENTOR' || role === 'ETD', items = [], parts = new Map();
+    const master = window.allMasterParticipants || [];
+    const info = (p) => ({ id: String(p.idPelamar || ''), name: p.namaPeserta || '', batch: p.batch || '', bagian: p.bagian || '', penempatan: p.penempatan || '', tahun: p.tahun || '', tes: p.tesTeori || '' });
+    const getP = (p) => { const k = (p.idPelamar || '').toString().trim() || 'n:' + fold(p.namaPeserta); let e = parts.get(k); if (!e) { e = { type: 'participant', key: k, info: info(p), recs: [] }; parts.set(k, e); } return e; };
+    if (canMaster) master.forEach(getP);
+
+    const mkRecs = (f) => (f.globalStore?.selectedParticipants || []).map((p, i) => p ? ({
+        formId: f.id, pIndex: i, form: f, p,
+        mentorStatus: f.participants_scale14?.[i]?.status || 'Diluluskan', mentorReason: f.participants_scale14?.[i]?.rejectionReason || '',
+        user: f.userApprovals?.[i] || { status: 'PENDING', reason: '' }, mo: f.moApprovals?.[i] || { status: 'PENDING', reason: '' }
+    }) : null).filter(Boolean);
+
+    const formFields = (f, recs, extra) => [
+        mkField(f.globalStore?.flagship || f.flagship, 8), mkField(f.id, 7),
+        mkField(recs.map(r => r.p.namaPeserta).join(' '), 7), mkField(recs.map(r => r.p.idPelamar).join(' '), 6),
+        mkField(f.mentorName || f.globalStore?.mentorName, 6), mkField(f.globalStore?.batch || f.batch, 5),
+        mkField((f.globalStore?.date || '') + ' ' + fmtDate(f.globalStore?.date), 3), mkField(extra || '', 1)
+    ];
+
+    const visible = raw.forms.filter(f => canMaster || f.isApprovedByETD);
+    visible.forEach(f => {
+        const recs = mkRecs(f);
+        recs.forEach(r => getP(r.p).recs.push(r));
+        items.push({ type: 'form', id: f.id, form: f, recs, time: f.createdAt || 0, fields: formFields(f, recs) });
+    });
+    raw.trash.forEach(f => { const recs = mkRecs(f); items.push({ type: 'trash', id: f.id, form: f, recs, time: f.deletedAt || 0, fields: formFields(f, recs, 'sampah terhapus') }); });
+    raw.drafts.forEach(d => {
+        const sel = (d.globalStore?.selectedParticipants || []).filter(Boolean);
+        items.push({ type: 'draft', id: d.id, draft: d, sel, time: d.updatedAt || 0, fields: [
+            mkField(d.flagship, 8), mkField(d.id, 7), mkField(sel.map(p => p.namaPeserta).join(' '), 7), mkField(sel.map(p => p.idPelamar).join(' '), 6),
+            mkField(d.mentorName, 6), mkField(d.globalStore?.batch, 5)] });
+    });
+    parts.forEach(e => {
+        const stores = uniq(e.recs.map(r => r.form.globalStore?.flagship)), mentors = uniq(e.recs.map(r => r.form.mentorName));
+        e.time = Math.max(0, ...e.recs.map(r => r.form.createdAt || 0));
+        e.fields = [mkField(e.info.name, 10), mkField(e.info.id, 9), mkField(e.info.batch, 5), mkField(e.info.bagian + ' ' + e.info.penempatan, 4), mkField(stores.join(' '), 5), mkField(e.info.tahun, 3), mkField(mentors.join(' '), 3)];
+        items.push(e);
+    });
+    menuList(role).forEach(m => items.push(m));
+
+    const vocab = new Map();
+    items.forEach(it => { if (it.type === 'menu') return; it.fields.forEach(f => { if (f.w >= 5) f.words.forEach(w => { if (w.length >= 4) vocab.set(w, (vocab.get(w) || 0) + 1); }); }); });
+    state.items = items; state.vocab = vocab; state.masterRef = master; state.role = role;
+}
+
+/* ---------- Pencarian ---------- */
+function search(qs) {
+    const q = parseQuery(qs), hasStatus = Object.keys(q.status).length > 0, out = [];
+    for (const it of state.items) {
+        if (it.type === 'menu') {
+            if (hasStatus) continue;
+            const toks = q.req.length ? q.req : q.typeToks; if (!toks.length) continue;
+            const s = scoreFields(it.fields, toks, []); if (s > 0) out.push({ it, score: s }); continue;
+        }
+        if (q.types.size && !q.types.has(it.type)) continue;
+        if (hasStatus) { if (it.type === 'draft' || !it.recs.length || !it.recs.some(r => passRec(r, q.status))) continue; }
+        let s = q.req.length ? scoreFields(it.fields, q.req, q.soft) : 1;
+        if (s <= 0) continue;
+        if (it.type === 'participant' && it.recs.length) s += 0.5;
+        if (it.type === 'trash') s *= 0.7;
+        out.push({ it, score: s });
+    }
+    out.sort((a, b) => b.score - a.score || (b.it.time || 0) - (a.it.time || 0));
+    return { q, out };
+}
+
+function suggest(q) {
+    if (!q.req.length) return null;
+    let changed = false;
+    const fixed = q.req.map(t => {
+        if (t.length < 4) return t;
+        for (const w of state.vocab.keys()) if (w === t || w.startsWith(t)) return t;
+        let best = null, bd = 3;
+        for (const w of state.vocab.keys()) { const d = lev(t, w, 2); if (d < bd || (d === bd && best && state.vocab.get(w) > state.vocab.get(best))) { bd = d; best = w; } }
+        if (best && bd <= 2) { changed = true; return best; } return t;
+    });
+    return changed ? fixed.join(' ') : null;
+}
+
+/* ---------- Tampilan baris ---------- */
+const GROUPS = { participant: ['Peserta', 'user'], form: ['Form Penilaian', 'file-text'], draft: ['Draft Tersimpan', 'folder-clock'], trash: ['Tempat Sampah', 'trash-2'], menu: ['Menu & Pintasan', 'zap'] };
+function view(it) {
+    if (it.type === 'participant') {
+        const i = it.info, last = it.recs[0] ? it.recs.slice().sort((a, b) => (b.form.createdAt || 0) - (a.form.createdAt || 0))[0] : null;
+        const b = last ? (last.mentorStatus === 'Diluluskan' ? badge('Diluluskan', 'ss-b-green') : badge('Tidak Lulus', 'ss-b-red')) : badge('Belum dinilai', 'ss-b-gray');
+        return { icon: 'user', title: i.name, meta: [i.id, i.batch && 'Batch ' + i.batch.replace(/^batch\s*/i, ''), i.penempatan || i.bagian, i.tahun].filter(Boolean).join(' · '), sub: it.recs.length ? `${it.recs.length} penilaian · ${uniq(it.recs.map(r => r.form.globalStore?.flagship)).slice(0, 2).join(', ')}` : '', badge: b };
+    }
+    if (it.type === 'form' || it.type === 'trash') {
+        const f = it.form, names = it.recs.map(r => r.p.namaPeserta), more = names.length > 3 ? ` +${names.length - 3}` : '';
+        const b = it.type === 'trash' ? badge('Dihapus', 'ss-b-red') : f.isApprovedByETD ? badge('Approved', 'ss-b-green') : badge('Menunggu', 'ss-b-amber');
+        return { icon: it.type === 'trash' ? 'trash-2' : 'file-text', title: f.globalStore?.flagship || '(tanpa lokasi)', meta: [it.id, f.globalStore?.batch && 'Batch ' + String(f.globalStore.batch).replace(/^batch\s*/i, ''), f.mentorName, fmtDate(f.globalStore?.date)].filter(Boolean).join(' · '), sub: names.slice(0, 3).join(', ') + more, badge: b };
+    }
+    if (it.type === 'draft') {
+        const d = it.draft, names = it.sel.map(p => p.namaPeserta), more = names.length > 3 ? ` +${names.length - 3}` : '';
+        return { icon: 'folder-clock', title: d.flagship || 'Toko Belum Diisi', meta: [it.id, d.mentorName, 'diperbarui ' + fmtTime(d.updatedAt)].filter(Boolean).join(' · '), sub: names.slice(0, 3).join(', ') + more, badge: badge('Draft', 'ss-b-blue') };
+    }
+    return { icon: it.icon, title: it.title, meta: it.desc, sub: '', badge: null };
+}
+const rowHtml = (r, i, hl) => { const v = view(r.it); return `<div class="ss-row" role="option" id="ss-opt-${i}" data-i="${i}"><div class="ss-ico ss-ico-${r.it.type}"><i data-lucide="${v.icon}" class="w-4 h-4"></i></div><div class="ss-body"><div class="ss-title">${highlight(v.title, hl)}</div><div class="ss-meta">${highlight(v.meta, hl)}</div>${v.sub ? `<div class="ss-sub">${highlight(v.sub, hl)}</div>` : ''}</div>${v.badge ? `<span class="ss-badge ${v.badge.cls}">${esc(v.badge.text)}</span>` : ''}</div>`; };
+
+/* ---------- Render ---------- */
+const RK = () => 'misdo_ss_recent_' + (window.userRole || '');
+const getRecents = () => { try { return JSON.parse(localStorage.getItem(RK()) || '[]'); } catch (e) { return []; } };
+const setRecents = (a) => { try { localStorage.setItem(RK(), JSON.stringify(a.slice(0, 6))); } catch (e) {} };
+const saveRecent = (t) => { t = t.trim(); if (t.length < 2) return; setRecents([t, ...getRecents().filter(x => x.toLowerCase() !== t.toLowerCase())]); };
+
+function ensureIndex() {
+    const stale = !state.raw || state.masterRef !== (window.allMasterParticipants || []) || state.role !== window.userRole;
+    if (stale && state.raw) buildIndex();
+}
+
+function run() {
+    if (!state.open) return;
+    if (!state.raw && (window.allMasterParticipants || []).length && (window.userRole === 'MENTOR' || window.userRole === 'ETD')) { state.raw = { forms: [], trash: [], drafts: [] }; state.masterRef = null; }
+    if (!state.raw) { results.innerHTML = `<div class="ss-empty"><i data-lucide="loader-2" class="w-5 h-5 animate-spin" style="margin:0 auto .4rem"></i>Memuat data pencarian…</div>`; state.flat = []; statusEl.textContent = ''; icons(); return; }
+    ensureIndex();
+    const text = input.value.trim(); wrap.classList.toggle('ss-has', !!text);
+    state.flat = []; state.active = -1;
+    if (!text) return renderHome();
+
+    const { q, out } = search(text); state.last = q;
+    const hl = [...q.req, ...q.soft];
+    const chips = [];
+    const S = q.status; if (S.mentor) chips.push(S.mentor === 'lulus' ? 'Diluluskan' : 'Tidak diluluskan'); if (S.user) chips.push('User: ' + S.user); if (S.mo) chips.push('MO: ' + (S.mo === 'ACCEPT' ? 'Accept' : 'Reject')); if (S.pending) chips.push(S.pending === 'etd' ? 'Menunggu ETD' : S.pending === 'user' ? 'Menunggu User' : S.pending === 'mo' ? 'Menunggu MO' : 'Menunggu'); if (S.approved) chips.push('Disetujui ETD');
+    q.types.forEach(t => chips.push('Hanya: ' + GROUPS[t][0]));
+    chipsEl.innerHTML = chips.map(c => `<span class="ss-chip">${esc(c)}</span>`).join(''); chipsEl.classList.toggle('on', chips.length > 0);
+
+    if (!out.length) {
+        const sg = suggest(q);
+        results.innerHTML = `<div class="ss-empty">Tidak ada hasil untuk <b>“${esc(text)}”</b>.${sg ? `<br><button class="ss-did" data-fill="${esc(sg)}">Maksud Anda: ${esc(sg)}?</button>` : ''}<br><span style="font-size:.7rem">Coba nama peserta, ID pelamar, nama store, mentor, atau batch.</span></div>`;
+        statusEl.textContent = state.error ? 'Sebagian data gagal dimuat' : '0 hasil'; return icons();
+    }
+    const groups = new Map();
+    out.forEach(r => { if (!groups.has(r.it.type)) groups.set(r.it.type, []); groups.get(r.it.type).push(r); });
+    let html = '';
+    for (const [type, list] of groups) {
+        const limit = state.expanded.has(type) ? MAX_EXPANDED : MAX_GROUP, shown = list.slice(0, limit);
+        html += `<div class="ss-group"><span>${GROUPS[type][0]}</span><span>${list.length}</span></div>`;
+        shown.forEach(r => { const idx = state.flat.length; state.flat.push(r.it); html += rowHtml(r, idx, hl); });
+        if (list.length > shown.length && !state.expanded.has(type)) html += `<button class="ss-more" data-more="${type}">Tampilkan ${Math.min(list.length, MAX_EXPANDED) - shown.length} lainnya…</button>`;
+        else if (list.length > MAX_EXPANDED && state.expanded.has(type)) html += `<div class="ss-tip">Menampilkan ${MAX_EXPANDED} dari ${list.length}. Persempit dengan kata kunci tambahan.</div>`;
+    }
+    results.innerHTML = html;
+    statusEl.textContent = `${out.length} hasil` + (state.loadedAt ? ' · data ' + new Date(state.loadedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '') + (state.error ? ' · sebagian gagal dimuat' : '') + (state.loading ? ' · memperbarui…' : '');
+    setActive(0); icons();
+}
+
+function renderHome() {
+    chipsEl.classList.remove('on'); chipsEl.innerHTML = '';
+    const rec = getRecents(), menus = state.items.filter(i => i.type === 'menu');
+    let html = '';
+    if (rec.length) { html += `<div class="ss-group"><span>Pencarian terakhir</span><button data-clear-recent style="border:0;background:none;color:#8c6b5d;font-weight:800;cursor:pointer;font-size:.65rem">Hapus</button></div>` + rec.map(t => `<div class="ss-row" data-fill="${esc(t)}"><div class="ss-ico ss-ico-menu" style="background:#f3f4f6;color:#6b7280"><i data-lucide="history" class="w-4 h-4"></i></div><div class="ss-body"><div class="ss-title">${esc(t)}</div></div></div>`).join(''); }
+    html += `<div class="ss-group"><span>Pintasan</span></div>`;
+    menus.forEach(m => { const idx = state.flat.length; state.flat.push(m); html += rowHtml({ it: m }, idx, []); });
+    const eg = (state.role === 'MO' || state.role === 'USER') ? ['rekap', 'diluluskan', 'menunggu', 'batch 5'] : ['budi', 'draft', 'diluluskan', 'menunggu approve'];
+    html += `<div class="ss-tip">Coba: ${eg.map(e => `<code data-fill="${esc(e)}">${esc(e)}</code>`).join(' ')}<br>Cari berdasarkan nama, ID pelamar, store, mentor, batch, atau status (lulus, tidak lulus, menunggu, ok, nok).</div>`;
+    results.innerHTML = html; statusEl.textContent = state.error ? 'Data gagal dimuat' : (state.loading ? 'Memperbarui data…' : 'Siap mencari'); setActive(0); icons();
+}
+
+function setActive(i) {
+    const rows = results.querySelectorAll('.ss-row[data-i]'); if (!rows.length) { state.active = -1; return; }
+    i = (i + rows.length) % rows.length; state.active = i;
+    rows.forEach((r, k) => { r.classList.toggle('ss-active', k === i); r.setAttribute('aria-selected', k === i ? 'true' : 'false'); });
+    input.setAttribute('aria-activedescendant', 'ss-opt-' + i); rows[i].scrollIntoView({ block: 'nearest' });
+}
+
+/* ---------- Buka / tutup ---------- */
+function openSearch() {
+    if (wrap.classList.contains('ss-off')) return;
+    state.open = true; wrap.classList.add('ss-open'); input.setAttribute('aria-expanded', 'true');
+    if (isMobile()) document.body.style.overflow = 'hidden';
+    input.focus(); run(); loadData(false);
+}
+function closeSearch(blur = true) {
+    state.open = false; wrap.classList.remove('ss-open'); input.setAttribute('aria-expanded', 'false'); document.body.style.overflow = ''; if (blur) input.blur();
+}
+const canLeave = () => { const f = $('view-form'); return !(f && !f.classList.contains('hidden') && window.viewMode === 'DRAFT') || confirm('Anda sedang mengisi form penilaian. Perubahan yang belum disimpan sebagai draft akan hilang. Lanjutkan?'); };
+
+function activate(it) {
+    if (!it) return;
+    if (it.type === 'participant') { saveRecent(input.value); closeSearch(); return openParticipant(it); }
+    if (!canLeave()) return;
+    saveRecent(input.value); closeSearch();
+    if (it.type === 'menu') return it.run();
+    if (it.type === 'trash') return window.showView('trash');
+    if (it.type === 'draft') return window.openDraft(it.id);
+    if (it.type === 'form') return openForm(it.id);
+}
+function openForm(id) {
+    if (!(window.allSubmittedForms || []).some(f => f.id === id)) window.allSubmittedForms = state.raw.forms;
+    window.openSubmittedForm(id);
+}
+
+/* ---------- Detail peserta ---------- */
+const modal = document.createElement('div'); modal.id = 'ss-modal'; modal.className = 'no-print'; document.body.appendChild(modal);
+function stat(s, ok, bad) { return s === ok ? `<span class="ss-badge ss-b-green">${ok}</span>` : s === bad ? `<span class="ss-badge ss-b-red">${bad}</span>` : `<span class="ss-badge ss-b-gray">Pending</span>`; }
+function openParticipant(e) {
+    const i = e.info, recs = e.recs.slice().sort((a, b) => (b.form.createdAt || 0) - (a.form.createdAt || 0));
+    const cell = (l, v) => `<div><small>${l}</small><span>${esc(v || '-')}</span></div>`;
+    const recHtml = recs.length ? recs.map(r => {
+        const a = avgs(r.form, r.pIndex), f = r.form, mo = r.mo.status;
+        return `<div class="ssm-rec"><div style="display:flex;justify-content:space-between;gap:.5rem;align-items:flex-start"><div><div style="font-weight:800;color:#362219;font-size:.85rem">${esc(f.globalStore?.flagship || '-')}</div><div style="font-size:.7rem;color:#6b7280">${esc(r.formId)} · Batch ${esc(f.globalStore?.batch || '-')} · ${esc(f.mentorName || '-')} · ${esc(fmtDate(f.globalStore?.date))}</div></div><button class="ssm-open" data-open-form="${esc(r.formId)}">Buka Form</button></div>
+        <div style="display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.6rem">${r.mentorStatus === 'Diluluskan' ? '<span class="ss-badge ss-b-green">Mentor: Diluluskan</span>' : '<span class="ss-badge ss-b-red">Mentor: Tidak Lulus</span>'}${f.isApprovedByETD ? '<span class="ss-badge ss-b-green">ETD: Approved</span>' : '<span class="ss-badge ss-b-amber">ETD: Menunggu</span>'}<span class="ss-badge ss-b-gray">User:</span>${stat(r.user.status, 'OK', 'NOK')}<span class="ss-badge ss-b-gray">MO:</span>${mo === 'ACCEPT' || mo === 'OK' ? '<span class="ss-badge ss-b-green">Accept</span>' : mo === 'REJECT' || mo === 'NOK' ? '<span class="ss-badge ss-b-red">Reject</span>' : '<span class="ss-badge ss-b-gray">Pending</span>'}</div>
+        <div style="display:flex;gap:1rem;margin-top:.6rem;font-size:.75rem;color:#6b7280"><span>Beverage <b style="color:#2563eb">${a.bev}</b></span><span>Side Dish <b style="color:#9333ea">${a.sd}</b></span><span>Teknis <b style="color:#ea580c">${a.teknis}</b></span></div>${r.mentorReason ? `<div style="margin-top:.5rem;font-size:.7rem;color:#6b7280;font-style:italic">Alasan: ${esc(r.mentorReason)}</div>` : ''}</div>`;
+    }).join('') : `<div class="ss-empty" style="border:1px dashed #d2bab0;border-radius:1rem;margin-top:.7rem">Belum ada penilaian untuk peserta ini.</div>`;
+    modal.innerHTML = `<div class="ssm-card" role="dialog" aria-modal="true"><div class="ssm-head"><div><div style="font-size:1.05rem;font-weight:900;color:#362219;text-transform:uppercase">${esc(i.name)}</div><div style="font-size:.7rem;color:#8c6b5d;font-weight:700">ID Pelamar: ${esc(i.id || '-')}</div></div><button class="ssm-x" data-close-modal aria-label="Tutup"><i data-lucide="x" class="w-4 h-4"></i></button></div>
+    <div class="ssm-grid">${cell('Batch', i.batch)}${cell('Tahun', i.tahun)}${cell('Bagian', i.bagian)}${cell('Penempatan', i.penempatan)}${cell('Tes Teori', i.tes)}${cell('Jumlah Penilaian', String(recs.length))}</div>
+    <div style="padding:1rem 1.5rem 1.5rem"><div style="font-size:.7rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#a18072">Riwayat Penilaian</div>${recHtml}</div></div>`;
+    modal.classList.add('on'); icons();
+}
+const closeModal = () => modal.classList.remove('on');
+modal.addEventListener('click', (ev) => {
+    if (ev.target === modal || ev.target.closest('[data-close-modal]')) return closeModal();
+    const b = ev.target.closest('[data-open-form]'); if (b) { if (!canLeave()) return; closeModal(); openForm(b.dataset.openForm); }
+});
+
+/* ---------- Event ---------- */
+let timer; input.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(run, 120); wrap.classList.toggle('ss-has', !!input.value); });
+input.addEventListener('focus', () => { if (!state.open) openSearch(); });
+$('ss-toggle').addEventListener('click', openSearch);
+$('ss-close').addEventListener('click', () => closeSearch());
+$('ss-clear').addEventListener('click', () => { input.value = ''; wrap.classList.remove('ss-has'); input.focus(); run(); });
+$('ss-backdrop').addEventListener('click', () => closeSearch());
+input.addEventListener('keydown', (ev) => {
+    if (ev.key === 'ArrowDown') { ev.preventDefault(); setActive(state.active + 1); }
+    else if (ev.key === 'ArrowUp') { ev.preventDefault(); setActive(state.active - 1); }
+    else if (ev.key === 'Enter') { ev.preventDefault(); activate(state.flat[state.active]); }
+    else if (ev.key === 'Escape') { ev.preventDefault(); closeSearch(); }
+    else if (ev.key === 'Tab') closeSearch(false);
+});
+results.addEventListener('click', (ev) => {
+    const fill = ev.target.closest('[data-fill]'); if (fill) { input.value = fill.dataset.fill; input.focus(); return run(); }
+    if (ev.target.closest('[data-clear-recent]')) { setRecents([]); return run(); }
+    const more = ev.target.closest('[data-more]'); if (more) { state.expanded.add(more.dataset.more); return run(); }
+    const row = ev.target.closest('.ss-row[data-i]'); if (row) activate(state.flat[+row.dataset.i]);
+});
+results.addEventListener('mousemove', (ev) => { const row = ev.target.closest('.ss-row[data-i]'); if (row && +row.dataset.i !== state.active) setActive(+row.dataset.i); });
+document.addEventListener('keydown', (ev) => {
+    if (wrap.classList.contains('ss-off')) return;
+    if (ev.key === 'Escape' && modal.classList.contains('on')) return closeModal();
+    const t = ev.target, typing = t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable);
+    if ((ev.key === '/' && !typing && !ev.ctrlKey && !ev.metaKey) || ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'k')) { ev.preventDefault(); openSearch(); }
+});
+const refreshBtn = document.createElement('button'); refreshBtn.type = 'button'; refreshBtn.textContent = 'Muat ulang'; refreshBtn.addEventListener('click', async () => { statusEl.textContent = 'Memuat ulang…'; await loadData(true); run(); });
+$('ss-footer').appendChild(refreshBtn);
+
+/* Tampilkan setelah login (tanpa mengubah alur login yang sudah ada) */
+const roleBadge = $('role-badge');
+const sync = () => { const on = !roleBadge.classList.contains('hidden') && !!window.userRole; wrap.classList.toggle('ss-off', !on); if (!on && state.open) closeSearch(); if (on && state.role !== window.userRole) { state.raw = null; state.loadedAt = 0; state.role = window.userRole; input.value = ''; } icons(); };
+new MutationObserver(sync).observe(roleBadge, { attributes: true, attributeFilter: ['class'] }); sync();
+
     </script>
 </body>
 </html>
